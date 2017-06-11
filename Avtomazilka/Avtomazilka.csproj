@@ -56,6 +56,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stencil.cs" />
+    <Compile Include="WebBrowser.cs" />
     <Compile Include="Windows7Class.cs" />
     <Compile Include="YouTube.cs" />
     <EmbeddedResource Include="Form1.resx">

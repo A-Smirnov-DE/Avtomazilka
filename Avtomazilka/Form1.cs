@@ -26,8 +26,29 @@ namespace Avtomazilka
         private void Form1_Load(object sender, EventArgs e)
         {
             addNewLineToRichTextBox1("форма загрузилась");
-
+            
+            // Активируем фаерфокс
             Windows7Class.mouseClickOverFirefoxIcon();
+            
+            // Заходим на Ютуб
+            WebBrowser firefox = new WebBrowser();
+            //firefox.openYouTube();
+
+            // Проверяем язык виндоувса под фаерфоксом
+            Windows7Class.switchToGermanLanguage();
+
+            // Заходим и логинимся на ютуб
+            firefox.openYouTube();
+
+            YouTube.openVeraChanel();
+            YouTube.openVideosOfChanel();
+            YouTube.openNewVideo();
+            YouTube.makeLike();
+            YouTube.waitUntilVideoSeen();
+
+            firefox.historyBack();
+
+            //Boolean bbb = 
         } // Form1_Load()
 
 
@@ -47,6 +68,51 @@ namespace Avtomazilka
         {
             richTextBox1.AppendText(s + Environment.NewLine);
         }
+
+        private void TestButton_Click(object sender, EventArgs e)
+        {
+            this.TestButton.BackColor = Color.Transparent;
+            this.Refresh();
+            this.Invalidate();
+
+            // Ждём
+            System.Threading.Thread.Sleep(5000);
+
+            String fileName    = fileNameField.Text;
+            String deltaString = deltaField.Text;
+
+            int delta;
+
+            if (deltaString == "Дельта")
+            {
+                delta = 0;
+            }
+            else
+            {
+                delta = Int32.Parse(deltaField.Text);
+            } // if
+            
+
+            // Если не передали расширение файла, то это будет .png
+            if (fileName.IndexOf('.') == -1)
+            {
+                fileName += ".png";
+            } // if
+
+            Stencil testStencil = new Stencil(fileName);
+            testStencil.setColorDelta(delta);
+            if (testStencil.mouseMove())
+            {
+                this.TestButton.BackColor = Color.FromArgb(128, 255, 128);
+            }
+            else
+            {
+                this.TestButton.BackColor = Color.FromArgb(255, 128, 128);
+            } // if
+
+            this.Refresh();
+            this.Invalidate();
+        } // TestButton_Click()
     }
 }
 

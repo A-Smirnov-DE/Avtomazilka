@@ -21,6 +21,13 @@ namespace Avtomazilka
             RIGHTUP = 0x10,
             ABSOLUTE = 0x8000
         }
+        
+        public enum KEYEVENT
+        {
+            KEYDOWN = 0x0001, //Key down flag
+            KEYUP = 0x0002, //Key up flag
+        }
+
 
         /*
 http://www.kbdedit.com/manual/low_level_vk_list.html
@@ -33,11 +40,11 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
         [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto, CallingConvention = System.Runtime.InteropServices.CallingConvention.StdCall)]
         public static extern void mouse_event(uint dwFlags, int dx, int dy, uint dwData, IntPtr dwExtraInfo);
 
-        //[System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
-        //public static extern void keybd_event(byte bVk, byte bScan, int dwFlags, int dwExtraInfo);
+        [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+        public static extern void keybd_event(byte bVk, byte bScan, int dwFlags, int dwExtraInfo);
 
-        //[System.Runtime.InteropServices.DllImport("user32.dll")]
-        //public static extern uint MapVirtualKey(uint uCode, uint uMapType);
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        public static extern uint MapVirtualKey(uint uCode, uint uMapType);
 
 
 
@@ -87,12 +94,11 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
 
                     Color screenShotPixelColor      = smallImage.GetPixel(xPosition, yPosition);
                     Color smallImageFirstPixelColor = screenShot.GetPixel(xPosition + xPositionStartPoint, yPosition + yPositionStartPoint);
+                    
+                    //434, 732
 
                     //if (!smallImage.GetPixel(xPosition, yPosition).Equals(
                     //     screenShot.GetPixel(xPosition + xPositionStartPoint, yPosition + yPositionStartPoint)))
-
-                    //434, 732
-
                     if (!(((screenShotPixelColor.R - colorDelta) <= smallImageFirstPixelColor.R && smallImageFirstPixelColor.R <= (screenShotPixelColor.R + colorDelta)) &&
                           ((screenShotPixelColor.G - colorDelta) <= smallImageFirstPixelColor.G && smallImageFirstPixelColor.G <= (screenShotPixelColor.G + colorDelta)) &&
                           ((screenShotPixelColor.B - colorDelta) <= smallImageFirstPixelColor.B && smallImageFirstPixelColor.B <= (screenShotPixelColor.B + colorDelta))))
@@ -109,9 +115,10 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
 
         /**
          * Создаём скриншот зоны, где будем искать картинку.
+         * @param String subString = "" позволяет сохранить скриншот под другим именем.
          */
         //private Bitmap create_screen_shot(int sourceX = 0, int sourceY = 0)
-        public static Bitmap create_screen_shot()
+        public static Bitmap create_screen_shot(int number = 0)
         {
             int imageWidth, imageHeight, sourceX, sourceY;
             Graphics graph = null;
@@ -140,10 +147,24 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
 
             screenShot = bmp;
 
-            String path = imageFolder + "screen.bmp";
+            String path = imageFolder + "screen" + (number != 0 ? number.ToString() : "") + ".bmp";
             bmp.Save(@path);
             return bmp;
         } // create_screen_shot()
+
+        
+        /**
+         * Ищет маленькую картинку в большой картинке
+         * @param Bitmap smallImage - искомая картинка
+         * @param int colorDelta - допустимая погрешность в цвете
+         * @return Boolean
+         */
+        /*
+        public static Rectangle imageSearch(Bitmap smallImage, int colorDelta = 0)
+        {
+            return BotClass.image Search Rect(smallImage, colorDelta);
+        } // imageSearch()
+        */
 
 
         /**
@@ -151,9 +172,11 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
          * @param Bitmap smallImage - искомая картинка
          * @param int colorDelta - допустимая погрешность в цвете
          */
-        public static Boolean imageSearchAndMouseClick(Bitmap smallImage, int colorDelta)
+        public static Rectangle imageSearchAndMouseClick(Bitmap smallImage, int colorDelta = 0)
         {
-            if (BotClass.imageSearchAndMouseMove(smallImage, colorDelta))
+            Rectangle rec = BotClass.imageSearchAndMouseMove(smallImage, colorDelta);
+
+            if (!rec.IsEmpty)
             { // Картинка была найдена, курсор сдвинут
 
                 // Ждём
@@ -161,9 +184,9 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
 
                 // Кликаем
                 BotClass.mouseClick();
-            }
+            } // if
 
-            return false;
+            return rec;
         } // imageSearchAndMouseClick()
 
 
@@ -171,10 +194,11 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
          * Ищет маленькую картинку в большой картинке. И двигает на неё курсор мышки.
          * @param Bitmap smallImage - искомая картинка
          * @param int colorDelta - допустимая погрешность в цвете
+         * @return Rectangle - координаты найденой картинки (Если картинка не найдена, то пустой прямоугольник)
          */
-        public static Boolean imageSearchAndMouseMove(Bitmap smallImage, int colorDelta)
+        public static Rectangle imageSearchAndMouseMove(Bitmap smallImage, int colorDelta = 0)
         {
-            Rectangle rec = imageSearchRect(smallImage, colorDelta);
+            Rectangle rec = BotClass.imageSearch(smallImage, colorDelta);
 
             if (!rec.IsEmpty)
             { // Картинка была найдена
@@ -185,18 +209,16 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
 
                 // Двигаем курсор мыши
                 BotClass.moveCursor(rec);
-
-                return true;
             }
 
-            return false;
+            return rec;
         } // imageSearchAndMouseMove()
 
 
         /**
          * Ищет картинку
          */
-        public static Rectangle imageSearchRect(Bitmap smallImage, int colorDelta = 0)
+        public static Rectangle imageSearch(Bitmap smallImage, int colorDelta = 0)
         {
             Color smallImageFirstPixelColor = smallImage.GetPixel(0, 0);
 
@@ -232,7 +254,7 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
             } // столбики
 
             return new Rectangle();
-        } // imageSearchRect()
+        } // imageSearch()
 
 
         /**
@@ -247,115 +269,10 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
 
 
         /**
-         * Сдвинуть курсор мышки по определённым координатам.
-         * @param int x - x координата точки.
-         * @param int y - y координата точки.
+         * Нажимаем на клавишу.
+         * @param byte vKey - ???
+         * @param byte sKey = 0 - ???
          */
-        public static void moveCursor(int x, int y)
-        {
-            moveCursor(new Point(x, y));
-        } // MoveCursor(int x, int y)
-
-
-        /**
-         * Сдвинуть курсор мышки в определённый район.
-         * @param Rectangle r - прямоугольник с координатами.
-         */
-        public static void moveCursor(Rectangle r)
-        {
-
-            Random rnd = new Random();
-            moveCursor(
-                new Point(
-                    (int)rnd.Next(r.Left, r.Right),
-                    (int)rnd.Next(r.Top, r.Bottom)));
-        } // MoveCursor(int x, int y)
-
-
-        /**
-         * Кликает мышкой.
-         */
-        public static void mouseClick()
-        {
-            //нажали правую кнопку
-            mouse_event((uint)MOUSEEVENTF.ABSOLUTE | (uint)MOUSEEVENTF.LEFTDOWN | (uint)MOUSEEVENTF.LEFTUP, 0, 0, 0, IntPtr.Zero);
-            System.Threading.Thread.Sleep(2000);
-        } // mouseClick()
-
-
-
-
-
-
-
-
-
-
-        /*
-
-
-        [Flags]
-        
-        public enum KEYEVENT
-        {
-            KEYDOWN = 0x0001, //Key down flag
-            KEYUP   = 0x0002, //Key up flag
-        }
-        
-        /*
-        public enum KEYCODE
-        {
-            Point = 0x2e, // Точка
-
-            A = 0x41, //A key code
-            B = 0x42, //B key code
-            C = 0x43, //C key code
-
-            a = 0x61, //a key code
-            b = 0x62,
-            c = 0x63,
-
-            VK_LCONTROL = 0xA2, //Left Control key code
-        }
-        * /
-        
-
-constructor
-
-
-
-        public Boolean imageSearch(Bitmap smallImage)
-        {
-            Rectangle rec = imageSearchRect(smallImage);
-
-            if (!rec.IsEmpty)
-            {
-                // Картинка была найдена
-                return true;
-            }
-
-            return false;
-        } // imageSearch()
-
-
-        public static Color getColor(int xPosition, int yPosition)
-        {
-            /*
-            if (!area.IsEmpty)
-            { // Поправка на тот случай, если поиск делался не по всему экрану, а только в части.
-                xPosition += area.X;
-                yPosition += area.Y;
-            } // if
-            * /
-
-            return screenShot.GetPixel(xPosition, yPosition);
-        } // getColor()
-
-        public static Color getColor(Point p)
-        {
-            return getColor(p.X, p.Y);
-        } // getColor()
-
         public static void keyDown(byte bVk, byte key = 0)
         {
             uint scanCode;
@@ -372,13 +289,25 @@ constructor
 
             Random rnd = new Random();
             System.Threading.Thread.Sleep((int)rnd.Next(120, 200));
-        }
+        } // keyDown()
 
+
+        /**
+         * Нажимаем на клавишу.
+         * @param Keys vKey - ???
+         * @param Keys sKey = 0 - ???
+         */
         public static void keyDown(Keys vKey, Keys sKey = 0)
         {
             keyDown((byte)vKey, (byte)sKey);
-        }
+        } // keyDown()
 
+
+        /**
+         * Отпускаем клавишу.
+         * @param byte bVk
+         * @param byte key = 0
+         */
         public static void keyUp(byte bVk, byte key = 0)
         {
             uint scanCode;
@@ -403,12 +332,55 @@ constructor
 
             Random rnd = new Random();
             System.Threading.Thread.Sleep((int)rnd.Next(120, 200));
-        }
+        } // keyUp()
 
+
+        /**
+         * Отпускаем клавишу.
+         * @param Keys bVk
+         * @param Keys key = 0
+         */
         public static void keyUp(Keys vKey, Keys sKey = 0)
         {
             keyUp((byte)vKey, (byte)sKey);
-        }
+        } // keyUp()
+
+
+        /**
+         * Кликает мышкой.
+         */
+        public static void mouseClick()
+        {
+            //нажали правую кнопку
+            mouse_event((uint)MOUSEEVENTF.ABSOLUTE | (uint)MOUSEEVENTF.LEFTDOWN | (uint)MOUSEEVENTF.LEFTUP, 0, 0, 0, IntPtr.Zero);
+            System.Threading.Thread.Sleep(2000);
+        } // mouseClick()
+
+
+        /**
+         * Сдвинуть курсор мышки по определённым координатам.
+         * @param int x - x координата точки.
+         * @param int y - y координата точки.
+         */
+        public static void moveCursor(int x, int y)
+        {
+            moveCursor(new Point(x, y));
+        } // MoveCursor(int x, int y)
+
+
+        /**
+         * Сдвинуть курсор мышки в определённый район.
+         * @param Rectangle r - прямоугольник с координатами.
+         */
+        public static void moveCursor(Rectangle r)
+        {
+            Random rnd = new Random();
+            moveCursor(
+                new Point(
+                    (int)rnd.Next(r.Left, r.Right),
+                    (int)rnd.Next(r.Top, r.Bottom)));
+        } // MoveCursor(int x, int y)
+
 
         public static void printString(String s)
         { // В переменой s может быть следующие группы символов a-z, A-Z, @, /, 0-9, Shift, Ctrl, Win-Fn, Alt, Alt Gr и т.д.
@@ -486,6 +458,60 @@ constructor
 
             System.Threading.Thread.Sleep(2000);
         }
-         */
+
+
+
+
+
+
+
+
+        /*
+
+
+        [Flags]
+        
+        
+        /*
+        public enum KEYCODE
+        {
+            Point = 0x2e, // Точка
+
+            A = 0x41, //A key code
+            B = 0x42, //B key code
+            C = 0x43, //C key code
+
+            a = 0x61, //a key code
+            b = 0x62,
+            c = 0x63,
+
+            VK_LCONTROL = 0xA2, //Left Control key code
+        }
+        * /
+        
+
+constructor
+
+
+
+        public static Color getColor(int xPosition, int yPosition)
+        {
+            /*
+            if (!area.IsEmpty)
+            { // Поправка на тот случай, если поиск делался не по всему экрану, а только в части.
+                xPosition += area.X;
+                yPosition += area.Y;
+            } // if
+            * /
+
+            return screenShot.GetPixel(xPosition, yPosition);
+        } // getColor()
+
+        public static Color getColor(Point p)
+        {
+            return getColor(p.X, p.Y);
+        } // getColor()
+        
+*/
     }
 }

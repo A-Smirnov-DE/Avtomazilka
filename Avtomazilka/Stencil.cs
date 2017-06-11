@@ -27,6 +27,12 @@ namespace Avtomazilka
 
 
         /**
+         * Если картинка будет найдена, то координаты будут храниться тут.
+         */
+        private Rectangle rec = new Rectangle();
+
+
+        /**
          * Конструктор
          * @param String filename имя файла с картинкой
          * @param int delta = 0, размер участка, в котором могут колебаться цвета.
@@ -35,8 +41,34 @@ namespace Avtomazilka
         {
             String path = this.imageFolder + filename;
             loadSmallImage(@path);
-        }
-        
+        } // Stencil()
+
+
+        /**
+         * Возвращает координаты объекта
+         */
+        public Rectangle getRec()
+        {
+            return this.rec;
+        } // getRec()
+
+
+        /**
+         * Есть ли картинка?
+         */
+        public Boolean isFound()
+        {
+            if (!this.rec.IsEmpty)
+            { // Картинка уже была найдена
+                return true;
+            } // if
+
+            BotClass.create_screen_shot();
+
+            Rectangle rec = BotClass.imageSearch(this.image, this.delta);
+            return this.rectangleToBool(rec);
+        } // isFound()
+
 
         /**
          * Загрузка миникартинки.
@@ -56,9 +88,21 @@ namespace Avtomazilka
          */
         public Boolean mouseClick()
         {
+            if (!this.rec.IsEmpty)
+            { // Картинка уже была найдена
+                // Двигаем курсор на заранее найденый прямоугольник
+                BotClass.moveCursor(this.rec);
+                // И кликаем
+                BotClass.mouseClick();
+
+                return true;
+            } // if
+
             BotClass.create_screen_shot();
 
-            return BotClass.imageSearchAndMouseClick(this.image, this.delta);
+            Rectangle rec = BotClass.imageSearchAndMouseClick(this.image, this.delta);
+
+            return this.rectangleToBool(rec);
         } // mouseClick()
 
 
@@ -67,10 +111,51 @@ namespace Avtomazilka
          */
         public Boolean mouseMove()
         {
+            if (!this.rec.IsEmpty)
+            { // Картинка уже была найдена
+                // Двигаем курсор на заранее найденый прямоугольник
+                BotClass.moveCursor(this.rec);
+
+                return true;
+            } // if
+
             BotClass.create_screen_shot();
-            
-            return BotClass.imageSearchAndMouseMove(this.image, this.delta);
+
+            Rectangle rec = BotClass.imageSearchAndMouseMove(this.image, this.delta);
+
+            return this.rectangleToBool(rec);
         } // imageSearchRect()
+
+
+        /**
+         * Если действительно нашли маленькую картинку, то сохраняем её координаты.
+         * @return Boolean true - если картинка была найдена, false - картинка не была найдена.
+         */
+        private Boolean rectangleToBool(Rectangle rec = new Rectangle())
+        {
+            if (rec.IsEmpty)
+            { // Картинка не была найдена
+                // На всякий случай сбрасываем старые данные.
+                this.resetRec();
+
+                return false;
+            } // if()
+
+            // Сохраняем координаты объекта.
+            this.rec = rec;
+
+            return true;
+        } // rectangleToBool()
+
+
+        /**
+         * Сбрасывает координаты объекта, если раньше что-то было найдено.
+         */
+        public Boolean resetRec()
+        {
+            this.rec = new Rectangle();
+            return true;
+        } // resetRec()
 
 
         /**
@@ -95,11 +180,6 @@ namespace Avtomazilka
             return thisBot.imageSearchRect(this.image);
         } // imageSearchRect()
 
-        public Boolean isFound()
-        {
-            myBot thisBot = new myBot();
-            return thisBot.imageSearch(this.image);
-        } // isFound()
 
         public Rectangle searchRectInRect(Rectangle area)
         {
