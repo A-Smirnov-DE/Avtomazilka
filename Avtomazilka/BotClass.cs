@@ -21,7 +21,7 @@ namespace Avtomazilka
             RIGHTUP = 0x10,
             ABSOLUTE = 0x8000
         }
-        
+
         public enum KEYEVENT
         {
             KEYDOWN = 0x0001, //Key down flag
@@ -92,9 +92,9 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
                 for (int xPosition = 0; xPosition < smallImage.Width; xPosition++)
                 { // Прогон маленькой картинки по оси x (Строчки)
 
-                    Color screenShotPixelColor      = smallImage.GetPixel(xPosition, yPosition);
+                    Color screenShotPixelColor = smallImage.GetPixel(xPosition, yPosition);
                     Color smallImageFirstPixelColor = screenShot.GetPixel(xPosition + xPositionStartPoint, yPosition + yPositionStartPoint);
-                    
+
                     //434, 732
 
                     //if (!smallImage.GetPixel(xPosition, yPosition).Equals(
@@ -103,7 +103,7 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
                           ((screenShotPixelColor.G - colorDelta) <= smallImageFirstPixelColor.G && smallImageFirstPixelColor.G <= (screenShotPixelColor.G + colorDelta)) &&
                           ((screenShotPixelColor.B - colorDelta) <= smallImageFirstPixelColor.B && smallImageFirstPixelColor.B <= (screenShotPixelColor.B + colorDelta))))
                     {
-//                        BotClass.moveCursor(xPosition + xPositionStartPoint, yPosition + yPositionStartPoint);
+                        //                        BotClass.moveCursor(xPosition + xPositionStartPoint, yPosition + yPositionStartPoint);
                         return false;
                     } // if
                 } // for
@@ -152,29 +152,109 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
             return bmp;
         } // create_screen_shot()
 
-        
+
         /**
-         * Ищет маленькую картинку в большой картинке
-         * @param Bitmap smallImage - искомая картинка
+         * Ищет картинку
+         * 
+         * @param Bitmap smallImage - искомая маленькая картинка
          * @param int colorDelta - допустимая погрешность в цвете
-         * @return Boolean
+         * @param Rectangle rec - прямоугольник, где искать маленькую картинку
+         * @return Rectangle - координаты найденой картинки (Если картинка не найдена, то пустой прямоугольник)
          */
-        /*
-        public static Rectangle imageSearch(Bitmap smallImage, int colorDelta = 0)
+        public static Rectangle imageSearch(Bitmap smallImage, int colorDelta = 0, Rectangle rec = new Rectangle())
         {
-            return BotClass.image Search Rect(smallImage, colorDelta);
+            if (rec.IsEmpty)
+            { // если место поиска пусто, то искать во всём скриншоте
+                rec = new Rectangle(0, 0, screenShot.Width, screenShot.Height);
+            }
+            else
+            { // если место поиска передали, то проверить не вылезает ли его размер за поле скриншота.
+                if (rec.Left < 0)
+                { // область поиска слева выходит за предел скриншота.
+                    if (rec.Width + rec.Left > 0)
+                    { // Область поиска заходит лишь частично за предел скриншота
+                        rec.Width += rec.Left;
+                    }
+                    else
+                    { // Область поиска заходит полностью за предел скриншота
+                        return new Rectangle();
+                    }// if
+                }
+                else if (rec.Left >= screenShot.Width)
+                { // область поиска справа выходит за предел скриншота.
+                    return new Rectangle();
+                } // if
+
+                if (rec.Top < 0)
+                { // область поиска сверху выходит за предел скриншота.
+                    if (rec.Height + rec.Top > 0)
+                    { // Область поиска заходит лишь частично за предел скриншота
+                        rec.Height += rec.Top;
+                    }
+                    else
+                    { // Область поиска заходит полностью за предел скриншота
+                        return new Rectangle();
+                    } // if
+                }
+                else if (rec.Top >= screenShot.Height)
+                { // область поиска справа выходит за предел скриншота.
+                    return new Rectangle();
+                } // if
+            } // if
+            
+            if (smallImage.Height > rec.Height ||
+                smallImage.Width  > rec.Width)
+            { // картинку, которую мы ищем, больше поля, где надо искать.
+                return new Rectangle();
+            } // if
+
+            Color smallImageFirstPixelColor = smallImage.GetPixel(0, 0);
+
+            Color screenShotPixelColor = new Color();
+            // Ищем до совпадения по первому пикселю, потом переходим в подпрограмму.
+            for (int yPosition = rec.Top; yPosition < screenShot.Height - smallImage.Height; yPosition++)
+            { // Прогон большой картинки по оси y (Столбики)
+                //BotClass.moveCursor(10, yPosition);
+
+                for (int xPosition = rec.Left; xPosition < screenShot.Width - smallImage.Width; xPosition++)
+                { // Прогон большой картинки по оси x (Строчки)
+
+                    screenShotPixelColor = screenShot.GetPixel(xPosition, yPosition);
+
+                    //                  if (screenShotPixelColor.Equals(smallImageFirstPixelColor))
+                    if (((screenShotPixelColor.R - colorDelta) <= smallImageFirstPixelColor.R && smallImageFirstPixelColor.R <= (screenShotPixelColor.R + colorDelta)) &&
+                        ((screenShotPixelColor.G - colorDelta) <= smallImageFirstPixelColor.G && smallImageFirstPixelColor.G <= (screenShotPixelColor.G + colorDelta)) &&
+                        ((screenShotPixelColor.B - colorDelta) <= smallImageFirstPixelColor.B && smallImageFirstPixelColor.B <= (screenShotPixelColor.B + colorDelta)))
+                    { // пиксель сошёлся
+
+                        Point firstPoint = new Point(xPosition, yPosition);
+
+                        //BotClass.moveCursor(firstPoint);
+
+
+                        if (_screenShotSubSearch(smallImage, firstPoint, colorDelta))
+                        { // Ура!!! Картинку нашли!!!
+                            return new Rectangle(firstPoint, new Size(smallImage.Width, smallImage.Height));
+                        } // if Картинку нашли!!!
+                    } // if пиксель сошёлся
+
+                } // строчки
+            } // столбики
+
+            return new Rectangle();
         } // imageSearch()
-        */
 
 
         /**
          * Ищет маленькую картинку в большой картинке. И кликает по ней мышкой.
          * @param Bitmap smallImage - искомая картинка
          * @param int colorDelta - допустимая погрешность в цвете
+         * @param Rectangle rec - прямоугольник, где искать маленькую картинку
+         * @return Rectangle - координаты найденой картинки (Если картинка не найдена, то пустой прямоугольник)
          */
-        public static Rectangle imageSearchAndMouseClick(Bitmap smallImage, int colorDelta = 0)
+        public static Rectangle imageSearchAndMouseClick(Bitmap smallImage, int colorDelta = 0, Rectangle searchRec = new Rectangle())
         {
-            Rectangle rec = BotClass.imageSearchAndMouseMove(smallImage, colorDelta);
+            Rectangle rec = BotClass.imageSearchAndMouseMove(smallImage, colorDelta, searchRec);
 
             if (!rec.IsEmpty)
             { // Картинка была найдена, курсор сдвинут
@@ -194,11 +274,12 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
          * Ищет маленькую картинку в большой картинке. И двигает на неё курсор мышки.
          * @param Bitmap smallImage - искомая картинка
          * @param int colorDelta - допустимая погрешность в цвете
+         * @param Rectangle rec - прямоугольник, где искать маленькую картинку
          * @return Rectangle - координаты найденой картинки (Если картинка не найдена, то пустой прямоугольник)
          */
-        public static Rectangle imageSearchAndMouseMove(Bitmap smallImage, int colorDelta = 0)
+        public static Rectangle imageSearchAndMouseMove(Bitmap smallImage, int colorDelta = 0, Rectangle searchRec = new Rectangle())
         {
-            Rectangle rec = BotClass.imageSearch(smallImage, colorDelta);
+            Rectangle rec = BotClass.imageSearch(smallImage, colorDelta, searchRec);
 
             if (!rec.IsEmpty)
             { // Картинка была найдена
@@ -213,49 +294,7 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
 
             return rec;
         } // imageSearchAndMouseMove()
-
-
-        /**
-         * Ищет картинку
-         */
-        public static Rectangle imageSearch(Bitmap smallImage, int colorDelta = 0)
-        {
-            Color smallImageFirstPixelColor = smallImage.GetPixel(0, 0);
-
-            Color screenShotPixelColor = new Color();
-            // Ищем до совпадения по первому пикселю, потом переходим в подпрограмму.
-            for (int yPosition = 0; yPosition < screenShot.Height /*- smallImage.Height */; yPosition++)
-            { // Прогон большой картинки по оси y (Столбики)
-                //BotClass.moveCursor(10, yPosition);
-
-                for (int xPosition = 0; xPosition < screenShot.Width - smallImage.Width; xPosition++)
-                { // Прогон большой картинки по оси x (Строчки)
-
-                    screenShotPixelColor = screenShot.GetPixel(xPosition, yPosition);
-
-//                  if (screenShotPixelColor.Equals(smallImageFirstPixelColor))
-                    if (((screenShotPixelColor.R - colorDelta) <= smallImageFirstPixelColor.R && smallImageFirstPixelColor.R <= (screenShotPixelColor.R + colorDelta)) &&
-                        ((screenShotPixelColor.G - colorDelta) <= smallImageFirstPixelColor.G && smallImageFirstPixelColor.G <= (screenShotPixelColor.G + colorDelta)) &&
-                        ((screenShotPixelColor.B - colorDelta) <= smallImageFirstPixelColor.B && smallImageFirstPixelColor.B <= (screenShotPixelColor.B + colorDelta)))
-                        { // пиксель сошёлся
-                        
-                        Point firstPoint = new Point(xPosition, yPosition);
-
-                        //BotClass.moveCursor(firstPoint);
-
-
-                        if (_screenShotSubSearch(smallImage, firstPoint, colorDelta))
-                        { // Ура!!! Картинку нашли!!!
-                            return new Rectangle(firstPoint, new Size(smallImage.Width, smallImage.Height));
-                        } // if Картинку нашли!!!
-                    } // if пиксель сошёлся
-
-                } // строчки
-            } // столбики
-
-            return new Rectangle();
-        } // imageSearch()
-
+        
 
         /**
          * Сдвинуть курсор мышки по определённым координатам.
@@ -457,61 +496,7 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
             } // foreach
 
             System.Threading.Thread.Sleep(2000);
-        }
-
-
-
-
-
-
-
-
-        /*
-
-
-        [Flags]
+        } // printString()
         
-        
-        /*
-        public enum KEYCODE
-        {
-            Point = 0x2e, // Точка
-
-            A = 0x41, //A key code
-            B = 0x42, //B key code
-            C = 0x43, //C key code
-
-            a = 0x61, //a key code
-            b = 0x62,
-            c = 0x63,
-
-            VK_LCONTROL = 0xA2, //Left Control key code
-        }
-        * /
-        
-
-constructor
-
-
-
-        public static Color getColor(int xPosition, int yPosition)
-        {
-            /*
-            if (!area.IsEmpty)
-            { // Поправка на тот случай, если поиск делался не по всему экрану, а только в части.
-                xPosition += area.X;
-                yPosition += area.Y;
-            } // if
-            * /
-
-            return screenShot.GetPixel(xPosition, yPosition);
-        } // getColor()
-
-        public static Color getColor(Point p)
-        {
-            return getColor(p.X, p.Y);
-        } // getColor()
-        
-*/
     }
 }

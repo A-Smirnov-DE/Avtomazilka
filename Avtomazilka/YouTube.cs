@@ -11,6 +11,17 @@ namespace Avtomazilka
     static class YouTube
     {
         /**
+         * Деактивируем автоплей в ютубе.
+         */
+        public static bool deactivateAutoplay()
+        {
+            Stencil videoAutoplay = new Stencil("YouTube-Video-Autoplay.png");
+            //videoAutoplay.setColorDelta(0);
+            return videoAutoplay.mouseClick();
+        } // deactivateAutoplay()
+
+
+        /**
          * Открыта ли страница Ютуба?
          * 
          * @return bool true - страница Ютуба открыта, в противном случае false
@@ -48,17 +59,23 @@ namespace Avtomazilka
 
                 // Ждём две секунды, чтобы экран прокрутился вниз.
                 System.Threading.Thread.Sleep(2000);
-            }
+            } // while
 
-            // Возвращаем экран обратно (не пойму почему, но не всегда срабатывает)
+            // Сдвигаем курсор в сторону и кликаем по пустому полю.
+            Rectangle likeIconRec = likeIcon.getRec();
+            likeIconRec.Offset(-50, 0);
+            BotClass.moveCursor(likeIconRec);
+            BotClass.mouseClick();
+
+            // Возвращаем экран обратно (не пойму почему, но не всегда срабатывает. Перекликнуть рядом с кнопкой? Пока лишний раз наверх крутим)
             for (int i = 0; i<=counter+1; i++)
             {
                 BotClass.keyDown(Keys.PageUp);
                 BotClass.keyUp(Keys.PageUp);
 
-                // Ждём две секунды, чтобы экран прокрутился вниз.
-                System.Threading.Thread.Sleep(5000);
-            }
+                // Ждём, вдруг...
+                System.Threading.Thread.Sleep(500);
+            } // for
 
             return true;
         } // makeLike()
@@ -72,17 +89,22 @@ namespace Avtomazilka
             // Нашли двоеточие во времени у непросмотренного видео.
             Rectangle rec = YouTube.searchNewVideos();
 
-            // Размер картинки видео в списке 196*110
-            // Размер картинки видео над полоской времени 196*94
-            // Сдвигаем найденый прямоугольник на 150 и 80 пиксель, и растягиваем прямоугольник до 125 и 70 пикселей.
-            rec.Offset(-150, -80);
-            rec.Size = new Size(125, 70);
+            if (!rec.IsEmpty)
+            { // Нашли ещё непросмотренное видео
+                // Размер картинки видео в списке 196*110
+                // Размер картинки видео над полоской времени 196*94
+                // Сдвигаем найденый прямоугольник на 100 и 80 пиксель, и растягиваем прямоугольник до 75 и 70 пикселей.
+                rec.Offset(-100, -80);
+                rec.Size = new Size(75, 70);
 
-            // Двигаем курсор мышки и кликаем
-            BotClass.moveCursor(rec);
-            BotClass.mouseClick();
+                // Двигаем курсор мышки и кликаем
+                BotClass.moveCursor(rec);
+                BotClass.mouseClick();
 
-            return true;
+                return true;
+            } // if
+
+            return false;
         } // openNewVideo()
 
 
@@ -130,9 +152,42 @@ namespace Avtomazilka
         {
             YouTube.waitUntilPageIsLoaded();
 
+            // Признак непросмотренного видео
             Stencil videoTimeColon = new Stencil("YouTube-Video-TimeColon.png");
-            videoTimeColon.setColorDelta(30);
-            videoTimeColon.isFound();
+            videoTimeColon.setColorDelta(37);
+
+            // Признак конца страницы
+            Stencil videoListScrolledToDown = new Stencil("YouTube-VideoList-ScrolledToDown.png");
+            //videoListScrolledToDown.setColorDelta(0);
+
+            // Кнопка показать больше видео
+            Stencil videoListShowMore = new Stencil("YouTube-VideoList-ShowMore.png");
+            //videoListShowMore.setColorDelta(0);
+
+            // Ищем непросмотренное видео, пока не дойдём до конца страницы
+            while (!(
+                    videoTimeColon.isFound() ||
+                    videoListScrolledToDown.isFound()))
+            {
+                BotClass.keyDown(Keys.PageDown);
+                BotClass.keyUp(Keys.PageDown);
+
+                // Не забываем сбросить старые результаты поиска
+                videoTimeColon.resetRec();
+                videoListScrolledToDown.resetRec();
+                videoListShowMore.resetRec();
+
+                // Ждём две секунды, чтобы экран прокрутился вниз.
+                System.Threading.Thread.Sleep(2000);
+
+                //а так же не должно быть кнопки "показать больше"
+                if (videoListShowMore.mouseClick())
+                {
+                    // Когда нажали на кнопку "показать больше", сдвигаем курсор в сторону 
+                    BotClass.moveCursor(1, 1);
+                    System.Threading.Thread.Sleep(500);
+                }
+            } // while
 
             return videoTimeColon.getRec();
         } // searchNewVideos()

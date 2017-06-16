@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 
 namespace Avtomazilka
 {
@@ -26,29 +27,9 @@ namespace Avtomazilka
         private void Form1_Load(object sender, EventArgs e)
         {
             addNewLineToRichTextBox1("форма загрузилась");
-            
-            // Активируем фаерфокс
-            Windows7Class.mouseClickOverFirefoxIcon();
-            
-            // Заходим на Ютуб
-            WebBrowser firefox = new WebBrowser();
-            //firefox.openYouTube();
 
-            // Проверяем язык виндоувса под фаерфоксом
-            Windows7Class.switchToGermanLanguage();
 
-            // Заходим и логинимся на ютуб
-            firefox.openYouTube();
-
-            YouTube.openVeraChanel();
-            YouTube.openVideosOfChanel();
-            YouTube.openNewVideo();
-            YouTube.makeLike();
-            YouTube.waitUntilVideoSeen();
-
-            firefox.historyBack();
-
-            //Boolean bbb = 
+            //Boolean bbb = false;
         } // Form1_Load()
 
 
@@ -58,7 +39,45 @@ namespace Avtomazilka
         private void button1_Click(object sender, EventArgs e)
         {
             addNewLineToRichTextBox1("на кнопку нажали");
-        }
+
+            // Считываем пользователей
+            List<YouTubeUser> userList = this.readYouTubeUsersFromFile();
+           
+            // Заходим на Ютуб
+            WebBrowser firefox = new WebBrowser();
+
+            foreach (YouTubeUser aUser in userList)
+            {
+                // Активируем фаерфокс
+                Windows7Class.mouseClickOverFirefoxIcon();
+
+                if (firefox.openPrivateWindow())
+                { // Если удалось открыть новое окно
+
+                    // Проверяем язык виндоувса под фаерфоксом
+                    Windows7Class.switchToGermanLanguage();
+
+                    // Заходим и логинимся на ютуб
+                    firefox.openYouTube(aUser);
+
+                    YouTube.openVeraChanel();
+                    YouTube.openVideosOfChanel();
+
+                    while (YouTube.openNewVideo())
+                    { // пока новые видео находятся
+                        YouTube.makeLike();
+                        YouTube.deactivateAutoplay();
+                        YouTube.waitUntilVideoSeen();
+
+                        firefox.historyBack();
+                        firefox.refreshPage();
+                    } // while
+
+                    firefox.closeBrowserWindow();
+                } // if
+
+            } // foreach
+        } // button1_Click()
 
 
         /**
@@ -113,14 +132,44 @@ namespace Avtomazilka
             this.Refresh();
             this.Invalidate();
         } // TestButton_Click()
+
+
+
+        /**
+         * Читаем логины и пароли пользователей из ХМЛь-файла
+         * @return List список классов, где хранятся логины и пароли к ним
+         */
+        private List<YouTubeUser> readYouTubeUsersFromFile()
+        {
+            // Открываем файл
+            XmlDocument doc = new XmlDocument();
+            doc.PreserveWhitespace = true;
+            doc.Load("../../../data/logins.xml");
+
+            // Эльфийская магия
+            XmlNode xmlUsersNode = doc.LastChild;
+            XmlNodeList xmlUserList = xmlUsersNode.ChildNodes;
+
+            // Создаём список
+            List<YouTubeUser> userList = new List<YouTubeUser>();
+
+            foreach (XmlNode xmlAUser in xmlUserList)
+            {
+                if (xmlAUser.HasChildNodes)
+                { // Отсеиваем пустые узлы
+                    /*
+                    addNewLineToRichTextBox1(xmlAUser.Name);
+                    addNewLineToRichTextBox1(xmlAUser["email"].InnerText);
+                    addNewLineToRichTextBox1(xmlAUser["password"].InnerText);
+                    addNewLineToRichTextBox1("");
+                    */
+
+                    // Добавляем нового пользователя
+                    userList.Add(new YouTubeUser(xmlAUser["email"].InnerText, xmlAUser["password"].InnerText));
+                } // if
+            } // foreach
+
+            return userList;
+        } // readYouTubeUsersFromFile()
     }
 }
-
-
-/*
- * Ваш Ювелир
- * Your.Best.Jeweler@gmail.com
- * yaq123456
- * 29.01.1980
- * M
-*/

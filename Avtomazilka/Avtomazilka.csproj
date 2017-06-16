@@ -59,6 +59,7 @@
     <Compile Include="WebBrowser.cs" />
     <Compile Include="Windows7Class.cs" />
     <Compile Include="YouTube.cs" />
+    <Compile Include="YouTubeUser.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

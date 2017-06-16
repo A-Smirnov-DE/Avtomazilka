@@ -166,41 +166,5 @@ namespace Avtomazilka
             this.delta = delta;
         } // setColorDelta()
 
-
-
-/*
-        public Bitmap getImage()
-        {
-            return this.image;
-        } // getImage()
-
-        public Rectangle searchRect()
-        {
-            Bot thisBot = new Bot();
-            return thisBot.imageSearchRect(this.image);
-        } // imageSearchRect()
-
-
-        public Rectangle searchRectInRect(Rectangle area)
-        {
-            myBot thisBot = new myBot(area);
-            return thisBot.imageSearchRect(this.image);
-        } // imageSearchRect()
-
-        public Boolean isFoundInRect(Rectangle rect)
-        {
-            myBot thisBot = new myBot(rect);
-            return thisBot.imageSearch(this.image);
-        } // isFoundInRect()
-
-        /**
-         * Поиск шаблона в определённой области.
-         * /
-        public Boolean mouseMove(Rectangle area)
-        {
-            myBot thisBot = new myBot(area);
-            return thisBot.imageSearchAndMouseMove(this.image);
-        } // imageSearchRect()
-    */
     }
 }
