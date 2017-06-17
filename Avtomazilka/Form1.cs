@@ -42,7 +42,10 @@ namespace Avtomazilka
 
             // Считываем пользователей
             List<YouTubeUser> userList = this.readYouTubeUsersFromFile();
-           
+
+            // Считываем каналы
+            List<YouTubeChannel> channelsList = this.readYouTubeChannelsFromFile();
+
             // Заходим на Ютуб
             WebBrowser firefox = new WebBrowser();
 
@@ -60,18 +63,31 @@ namespace Avtomazilka
                     // Заходим и логинимся на ютуб
                     firefox.openYouTube(aUser);
 
-                    YouTube.openVeraChanel();
-                    YouTube.openVideosOfChanel();
+                    foreach (YouTubeChannel aChannel in channelsList)
+                    {
+                        /*
+                        YouTube.openVeraChanel();
+                        YouTube.openVideosOfChanel();
+                        */
+                        YouTube.openChanel(aChannel.getUrl());
 
-                    while (YouTube.openNewVideo())
-                    { // пока новые видео находятся
-                        YouTube.makeLike();
-                        YouTube.deactivateAutoplay();
-                        YouTube.waitUntilVideoSeen();
+                        // счётчик просмотренных видео
+                        int videoCount = 0;
+                        int channelLimit = aChannel.getLimit();
 
-                        firefox.historyBack();
-                        firefox.refreshPage();
-                    } // while
+                        while ((channelLimit == 0 || channelLimit > videoCount) && // не достигли границы просмотра
+                                YouTube.openNewVideo()) // или пока новые видео находятся
+                        {
+                            YouTube.makeLike();
+                            YouTube.deactivateAutoplay();
+                            YouTube.waitUntilVideoSeen();
+
+                            firefox.historyBack();
+                            firefox.refreshPage();
+
+                            videoCount++;
+                        } // while
+                    } // foreach
 
                     firefox.closeBrowserWindow();
                 } // if
@@ -133,6 +149,48 @@ namespace Avtomazilka
             this.Invalidate();
         } // TestButton_Click()
 
+
+
+        /**
+         * Читаем информацию о каналах из ХМЛь-файла
+         * @return List список классов, где хранится информация о канале
+         */
+        private List<YouTubeChannel> readYouTubeChannelsFromFile()
+        {
+            // Открываем файл
+            XmlDocument doc = new XmlDocument();
+            doc.PreserveWhitespace = true;
+            doc.Load("../../../data/channels.xml");
+
+            // Эльфийская магия
+            XmlNode xmlChannelsNode = doc.LastChild;
+            XmlNodeList xmlChannelsList = xmlChannelsNode.ChildNodes;
+
+            // Создаём список
+            List<YouTubeChannel> channelsList = new List<YouTubeChannel>();
+
+            int limit;
+
+            foreach (XmlNode xmlAChannel in xmlChannelsList)
+            {
+                if (xmlAChannel.HasChildNodes)
+                { // Отсеиваем пустые узлы
+                    if (xmlAChannel["limit"].IsEmpty)
+                    {
+                        limit = 0;
+                    }
+                    else
+                    {
+                        limit = Int32.Parse(xmlAChannel["limit"].InnerText);
+                    } // if
+
+                    // Добавляем новый канал
+                    channelsList.Add(new YouTubeChannel(xmlAChannel["name"].InnerText, xmlAChannel["url"].InnerText, limit));
+                } // if
+            } // foreach
+
+            return channelsList;
+        } // readYouTubeUsersFromFile()
 
 
         /**

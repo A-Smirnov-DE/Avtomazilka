@@ -40,7 +40,7 @@ namespace Avtomazilka
         public static bool makeLike()
         {
             Stencil likeIcon = new Stencil("YouTube-Like-Icon.png");
-            //likeIcon.setColorDelta(0);
+            likeIcon.setColorDelta(5);
 
             //@TODO проверить есть ли у браузера вертикальный бегунок и в зависимости от этого работать дальше.
 
@@ -60,6 +60,9 @@ namespace Avtomazilka
                 // Ждём две секунды, чтобы экран прокрутился вниз.
                 System.Threading.Thread.Sleep(2000);
             } // while
+
+            // после нажатия на "лайк", появляется меню "поделится" и активным становится строчка с УРЛ
+            System.Threading.Thread.Sleep(2000);
 
             // Сдвигаем курсор в сторону и кликаем по пустому полю.
             Rectangle likeIconRec = likeIcon.getRec();
@@ -107,6 +110,26 @@ namespace Avtomazilka
             return false;
         } // openNewVideo()
 
+
+        /**
+         * Открывает нужный Ютуб-канал
+         */
+        public static bool openChanel(String url)
+        {
+            // кликаем на адрессную строку
+            Stencil httpUrl = new Stencil("mozilla-firefox-url-http.png");
+            httpUrl.setColorDelta(10);
+            if (httpUrl.mouseClick())
+            {
+                BotClass.printString(url + "/videos" + Environment.NewLine);
+                System.Threading.Thread.Sleep(2000);
+                return true;
+            }
+            else
+            {
+                return false;
+            } // if
+        } // openChanel()
 
         /**
          * Открывает верын канал.

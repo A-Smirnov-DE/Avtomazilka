@@ -45,6 +45,7 @@ namespace Avtomazilka
             } // if()
 
             
+            /* Когда окно открывается, адрес для ввода УРЛ активно
             Stencil emptyUrl = new Stencil("mozilla-firefox-empty-url-de.png");
 
             emptyUrl.isFound();
@@ -52,10 +53,10 @@ namespace Avtomazilka
             if (!emptyUrl.mouseClick())
             { // Адресная строка была не пустой.
                 Stencil httpUrl = new Stencil("mozilla-firefox-url-http.png");
-                emptyUrl.setColorDelta(10);
-                emptyUrl.mouseClick();
+                httpUrl.setColorDelta(10);
+                httpUrl.mouseClick();
             }
-
+            */
             
             // Печатаем адрес ютуба, а заодно на всякий случай выходим из аккаунта.
             BotClass.printString("www.youtube.com/logout" + Environment.NewLine);

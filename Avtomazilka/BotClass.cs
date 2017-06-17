@@ -422,7 +422,7 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
 
 
         public static void printString(String s)
-        { // В переменой s может быть следующие группы символов a-z, A-Z, @, /, 0-9, Shift, Ctrl, Win-Fn, Alt, Alt Gr и т.д.
+        { // В переменой s может быть следующие группы символов a-z, A-Z, @, ., :, /, 0-9, Shift, Ctrl, Win-Fn, Alt, Alt Gr и т.д.
             foreach (char cOrig in s)
             {
                 Char c;
@@ -444,9 +444,19 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
                 {   // точка
                     c = (char)Keys.OemPeriod;
                 }
+                else if (':' == cOrig)
+                {   // двоеточие
+                    keyDown(Keys.ShiftKey); // зажимаем Shift
+                    pressedSHIFT = true;
+                    c = (char)Keys.OemPeriod;
+                }
                 else if ('/' == cOrig)
-                {   // точка
+                {   // деление
                     c = (char)Keys.Divide;
+                }
+                else if ('-' == cOrig)
+                {   // деление
+                    c = (char)Keys.OemMinus;
                 }
                 else if ('@' == cOrig)
                 {   // символ @
