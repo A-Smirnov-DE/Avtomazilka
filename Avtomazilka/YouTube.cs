@@ -39,8 +39,14 @@ namespace Avtomazilka
          */
         public static bool makeLike()
         {
+            // Иконка "нравится"
             Stencil likeIcon = new Stencil("YouTube-Like-Icon.png");
             likeIcon.setColorDelta(5);
+
+
+            // Иконка "нравится"
+            Stencil likedIcon = new Stencil("YouTube-Liked-Icon.png");
+            likedIcon.setColorDelta(5);
 
             //@TODO проверить есть ли у браузера вертикальный бегунок и в зависимости от этого работать дальше.
 
@@ -48,7 +54,7 @@ namespace Avtomazilka
             int counter = 0;
 
             // Пока не увидим символ лайка, "прокручиваем" экран браузера вниз и считаем эти "прокручивания".
-            while (!likeIcon.mouseClick())
+            while (!likeIcon.mouseClick() && !likedIcon.isFound())
             {
                 counter++;
                 BotClass.keyDown(Keys.PageDown);

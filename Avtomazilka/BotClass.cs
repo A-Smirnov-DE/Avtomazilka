@@ -508,5 +508,60 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
             System.Threading.Thread.Sleep(2000);
         } // printString()
         
+
+
+
+
+
+
+
+
+        /*
+
+
+        [Flags]
+        
+        
+        /*
+        public enum KEYCODE
+        {
+            Point = 0x2e, // Точка
+
+            A = 0x41, //A key code
+            B = 0x42, //B key code
+            C = 0x43, //C key code
+
+            a = 0x61, //a key code
+            b = 0x62,
+            c = 0x63,
+
+            VK_LCONTROL = 0xA2, //Left Control key code
+        }
+        * /
+        
+
+constructor
+
+
+
+        public static Color getColor(int xPosition, int yPosition)
+        {
+            /*
+            if (!area.IsEmpty)
+            { // Поправка на тот случай, если поиск делался не по всему экрану, а только в части.
+                xPosition += area.X;
+                yPosition += area.Y;
+            } // if
+            * /
+
+            return screenShot.GetPixel(xPosition, yPosition);
+        } // getColor()
+
+        public static Color getColor(Point p)
+        {
+            return getColor(p.X, p.Y);
+        } // getColor()
+        
+*/
     }
 }

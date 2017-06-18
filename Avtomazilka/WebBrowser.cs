@@ -112,6 +112,9 @@ namespace Avtomazilka
                 this.waitUntilPageIsLoaded();
             } // if
 
+            //@TODO надо дождаться появления запроса пароля. Обычная функция не работает с аяксом
+            System.Threading.Thread.Sleep(2000);
+
             // Печатаем логин-майл
             //BotClass.printString("yaq123456" + Environment.NewLine);
             BotClass.printString(user.getPassword() + Environment.NewLine);
